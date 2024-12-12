@@ -24,6 +24,8 @@ const connectDB = async () => {
 };
 connectDB();
 
+
+
 // Schema for users of app
 const UserSchema = new mongoose.Schema({
     task: {
@@ -125,13 +127,34 @@ app.put('/update/:id', async (req, res) => {
     }
 });
 
-
-
-
+// Update the server startup to include error handling
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, (err) => {
+    if (err) {
+        console.error('Error starting server:', err);
+        process.exit(1);
+    }
     console.log(`Server running on port ${PORT}`);
 });
+
+// Add error handlers
+server.on('error', (err) => {
+    console.error('Server error:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Rejection:', err);
+});
+
+// Move database connection before app.listen
+connectDB().then(() => {
+    console.log('Database connected successfully');
+}).catch((err) => {
+    console.error('Database connection failed:', err);
+    process.exit(1);
+});
+
+const app = require('./index.js');  // Export app from index.js
 
 
 
