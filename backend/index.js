@@ -50,7 +50,11 @@ const app = express();
 const cors = require("cors");
 app.use(express.json());
 app.use(cors({
-    origin: ['https://zirui2333.github.io', 'http://localhost:3000', 'https://your-render-app-url.onrender.com'],
+    origin: [
+        'https://zirui2333.github.io', 
+        'http://localhost:3000',
+        'https://assignment-5-backend-485d.onrender.com'  // Your Render URL
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
