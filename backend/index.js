@@ -4,9 +4,11 @@
 // To connect with your MongoDB database
 const mongoose = require('mongoose');
 const path = require('path');
+
+// Use environment variable or fallback to your direct URI
 const uri = process.env.MONGODB_URI || "mongodb+srv://zhengzirui43:pmbfINo4tD8cf0O1@cluster0.dsgmo.mongodb.net/";
 
-// Database connection
+// Enhanced database connection with better error handling
 const connectDB = async () => {
     try {
         await mongoose.connect(uri, {
@@ -14,17 +16,36 @@ const connectDB = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             retryWrites: true,
-            w: "majority"
+            w: "majority",
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
         });
         console.log('Connected to DoList database');
     } catch (err) {
         console.error('Database connection error:', err);
-        process.exit(1); // Exit the application if the database connection fails
+        process.exit(1);
     }
 };
-connectDB();
 
+// Ensure database connection before starting server
+connectDB().then(() => {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}).catch(err => {
+    console.error('Failed to connect to MongoDB:', err);
+    process.exit(1);
+});
 
+// Add mongoose error handlers
+mongoose.connection.on('error', err => {
+    console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB disconnected');
+});
 
 // Schema for users of app
 const UserSchema = new mongoose.Schema({
@@ -55,7 +76,7 @@ const cors = require("cors");
 app.use(express.json());
 app.use(cors({
     origin: [
-        'https://zirui2333.github.io', 
+        'https://zirui2333.github.io',
         'http://localhost:3000',
         'https://assignment-5-backend-485d.onrender.com'  // Your Render URL
     ],
@@ -127,34 +148,8 @@ app.put('/update/:id', async (req, res) => {
     }
 });
 
-// Update the server startup to include error handling
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, (err) => {
-    if (err) {
-        console.error('Error starting server:', err);
-        process.exit(1);
-    }
-    console.log(`Server running on port ${PORT}`);
-});
 
-// Add error handlers
-server.on('error', (err) => {
-    console.error('Server error:', err);
-});
 
-process.on('unhandledRejection', (err) => {
-    console.error('Unhandled Rejection:', err);
-});
-
-// Move database connection before app.listen
-connectDB().then(() => {
-    console.log('Database connected successfully');
-}).catch((err) => {
-    console.error('Database connection failed:', err);
-    process.exit(1);
-});
-
-const app = require('./index.js');  // Export app from index.js
 
 
 
