@@ -13,6 +13,8 @@ const connectDB = async () => {
             dbName: 'DoList',
             useNewUrlParser: true,
             useUnifiedTopology: true,
+            retryWrites: true,
+            w: "majority"
         });
         console.log('Connected to DoList database');
     } catch (err) {
